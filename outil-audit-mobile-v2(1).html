@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Audit TMD — Mobile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{
+  --bleu:#2B2F6B;--bleu-c:#4A4FA0;--bleu-p:#E8E9F5;
+  --rouge:#C93B50;--rouge-p:#FBECED;
+  --vert:#2D8659;--vert-p:#E6F4EC;
+  --orange:#D97B1A;--orange-p:#FDF3E4;
+  --g50:#F8F9FB;--g100:#EEF0F4;--g200:#D8DBE3;--g400:#9CA3B0;--g600:#5A6170;--g800:#2D3039;
+  --blanc:#FFF;--r:12px;--rl:16px;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-top:env(safe-area-inset-top,0px)
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--g50);color:var(--g800);
+  padding-top:calc(56px + var(--safe-top));
+  padding-bottom:calc(72px + var(--safe-bottom));
+  font-size:16px}
+
+/* ── TOP BAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;
+  height:calc(56px + var(--safe-top));
+  padding-top:var(--safe-top);
+  background:linear-gradient(135deg,var(--bleu),var(--bleu-c));
+  display:flex;align-items:center;justify-content:space-between;
+  padding-left:16px;padding-right:16px;
+  z-index:100;box-shadow:0 2px 8px rgba(43,47,107,.2)}
+.topbar-title{color:#fff;font-weight:700;font-size:.95em;line-height:1.2}
+.topbar-sub{color:rgba(255,255,255,.65);font-size:.72em}
+.topbar-right{display:flex;gap:6px}
+.top-btn{background:rgba(255,255,255,.15);border:none;color:#fff;
+  border-radius:8px;padding:7px 11px;font-size:.78em;font-weight:600;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;
+  min-height:36px}
+.top-btn:active{background:rgba(255,255,255,.25)}
+
+/* ── BOTTOM BAR ── */
+.bottombar{position:fixed;bottom:0;left:0;right:0;
+  padding-bottom:var(--safe-bottom);
+  background:var(--blanc);border-top:1px solid var(--g100);
+  display:flex;gap:0;z-index:100;
+  box-shadow:0 -2px 12px rgba(43,47,107,.08)}
+.bot-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:10px 4px 8px;border:none;background:none;cursor:pointer;
+  font-family:inherit;font-size:.65em;font-weight:600;color:var(--g600);
+  min-height:56px;transition:background .1s}
+.bot-btn:active{background:var(--g50)}
+.bot-btn.primary{color:var(--bleu)}
+.bot-btn.send{color:#6B3FA0}
+.bot-btn.danger{color:var(--rouge)}
+.bot-icon{font-size:1.5em;line-height:1}
+
+/* ── CONTENT ── */
+.app{padding:12px 14px 16px;max-width:600px;margin:0 auto}
+
+/* ── SECTIONS ── */
+.section{background:var(--blanc);border-radius:var(--rl);margin-bottom:10px;
+  border:1px solid var(--g100);overflow:hidden;
+  box-shadow:0 1px 3px rgba(43,47,107,.06)}
+.sec-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;-webkit-user-select:none}
+.sec-head:active{background:var(--g50)}
+.sec-title{font-weight:700;font-size:.9em;color:var(--bleu);display:flex;align-items:center;gap:8px}
+.sec-badge{background:var(--bleu-p);color:var(--bleu);font-size:.65em;
+  padding:2px 8px;border-radius:20px;font-weight:700}
+.sec-right{display:flex;align-items:center;gap:6px}
+.sec-pct{font-size:.68em;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.pct-red{background:var(--rouge-p);color:var(--rouge);border:1.5px solid var(--rouge)}
+.pct-orange{background:var(--orange-p);color:var(--orange);border:1.5px solid var(--orange)}
+.pct-green{background:var(--vert-p);color:var(--vert);border:1.5px solid var(--vert)}
+.chevron{font-size:.75em;color:var(--g400);transition:transform .2s}
+.clr-btn{font-size:.65em;padding:2px 7px;border-radius:20px;border:1.5px solid var(--g200);color:var(--g400);background:none;cursor:pointer;font-weight:600;line-height:1.6;font-family:inherit;white-space:nowrap;min-height:26px}
+.clr-btn:active{border-color:var(--rouge);color:var(--rouge);background:var(--rouge-p)}
+.sec-head.open .chevron{transform:rotate(180deg)}
+.sec-body{display:none;padding:0 16px 16px}
+.sec-body.open{display:block}
+
+/* ── FIELDS ── */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-weight:600;font-size:.8em;color:var(--g600);margin-bottom:6px}
+.field input,.field textarea,.field select{
+  width:100%;padding:13px 14px;
+  border:2px solid var(--g200);border-radius:var(--r);
+  font-size:16px;font-family:inherit;
+  background:var(--blanc);
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .15s
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:var(--bleu);box-shadow:0 0 0 3px rgba(43,47,107,.07)}
+.field textarea{resize:vertical;min-height:90px}
+.field input[readonly]{background:var(--g50);color:var(--g600)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3B0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub{font-size:.82em;font-weight:700;color:var(--bleu);margin:18px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid var(--bleu-p)}
+.sub:first-child{margin-top:2px}
+.check-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.check-item{display:flex;align-items:center;gap:6px;
+  background:var(--g50);border:1.5px solid var(--g200);border-radius:8px;
+  padding:8px 12px;cursor:pointer;font-size:.85em;font-weight:500;
+  transition:all .1s;min-height:40px}
+.check-item:active{background:var(--bleu-p);border-color:var(--bleu)}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--bleu);flex-shrink:0}
+.check-item.checked{background:var(--bleu-p);border-color:var(--bleu);color:var(--bleu);font-weight:600}
+
+/* ── SYNTHESE TABLE ── */
+.synth-table{width:100%;margin-bottom:4px}
+.synth-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--g100);gap:8px}
+.synth-row:last-child{border-bottom:none}
+.synth-label{flex:1;font-size:.8em;font-weight:500;line-height:1.3}
+.synth-radios{display:flex;gap:4px;flex-shrink:0}
+.synth-radio-btn{padding:4px 7px;border:1.5px solid var(--g200);border-radius:6px;
+  font-size:.65em;font-weight:700;cursor:pointer;background:none;transition:all .12s;
+  font-family:inherit;min-height:32px;min-width:32px;color:var(--g600)}
+.synth-radio-btn:active{transform:scale(.95)}
+.synth-radio-btn.fort.sel{background:#E6F4EC;border-color:var(--vert);color:var(--vert)}
+.synth-radio-btn.encours.sel{background:var(--bleu-p);border-color:var(--bleu);color:var(--bleu)}
+.synth-radio-btn.ameliorer.sel{background:var(--orange-p);border-color:var(--orange);color:var(--orange)}
+.synth-radio-btn.nc.sel{background:var(--g100);border-color:var(--g400);color:var(--g600)}
+
+/* ── THEME ACCORDION ── */
+.theme-block{margin-bottom:8px;border:1.5px solid var(--g200);border-radius:var(--r);overflow:hidden}
+.theme-title{font-size:.82em;font-weight:700;color:var(--bleu-c);
+  padding:12px 14px;background:var(--bleu-p);border-radius:0;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;-webkit-user-select:none;margin-bottom:0}
+.theme-title:active{filter:brightness(.95)}
+.theme-title .th-chevron{font-size:.7em;color:var(--bleu-c);transition:transform .2s}
+.theme-title.th-open .th-chevron{transform:rotate(180deg)}
+.theme-body{display:none;padding:0 12px 8px}
+.theme-body.th-open{display:block}
+.theme-pct{font-size:.65em;font-weight:700;padding:2px 7px;border-radius:12px;margin-right:6px}
+.task-row{padding:10px 0;border-bottom:1px solid var(--g100)}
+.task-row:last-child{border-bottom:none}
+.task-label{font-size:.82em;font-weight:600;margin-bottom:7px;color:var(--g800)}
+.task-statut{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.statut-btn{padding:8px 12px;border:1.5px solid var(--g200);border-radius:8px;
+  font-size:.75em;font-weight:700;cursor:pointer;background:none;font-family:inherit;
+  min-height:44px;min-width:44px;color:var(--g600);transition:all .1s}
+.statut-btn:active{transform:scale(.96)}
+.statut-btn.sel-oui{background:#E6F4EC;border-color:var(--vert);color:var(--vert)}
+.statut-btn.sel-non{background:var(--rouge-p);border-color:var(--rouge);color:var(--rouge)}
+.statut-btn.sel-partiel{background:var(--orange-p);border-color:var(--orange);color:var(--orange)}
+.statut-btn.sel-nv{background:var(--g100);border-color:var(--g400);color:var(--g600)}
+.statut-btn.sel-na{background:var(--g100);border-color:var(--g400);color:var(--g600)}
+.task-comment{width:100%;padding:10px 12px;border:2px solid var(--g200);
+  border-radius:var(--r);font-size:15px;font-family:inherit;resize:vertical;min-height:60px;
+  background:var(--blanc)}
+.task-comment:focus{outline:none;border-color:var(--bleu)}
+
+/* ── DYNAMIC TABLES ── */
+.dyn-card{background:var(--g50);border:1px solid var(--g200);border-radius:var(--r);
+  padding:12px;margin-bottom:8px;position:relative}
+.dyn-card-del{position:absolute;top:8px;right:8px;background:none;border:none;
+  color:var(--rouge);font-size:1.1em;cursor:pointer;padding:4px;min-height:32px;min-width:32px}
+.dyn-card .field{margin-bottom:10px}
+.dyn-card .field:last-child{margin-bottom:0}
+.add-btn{width:100%;padding:12px;border:2px dashed var(--g200);background:none;
+  border-radius:var(--r);font-size:.85em;font-weight:600;color:var(--bleu);cursor:pointer;
+  font-family:inherit;margin-bottom:14px;min-height:46px}
+.add-btn:active{background:var(--bleu-p)}
+
+/* ── SAVED PANEL ── */
+.saved-panel{display:none;background:var(--blanc);border-radius:var(--rl);
+  padding:16px;margin-bottom:10px;border:1px solid var(--g100)}
+.saved-panel.visible{display:block}
+.saved-item{display:flex;justify-content:space-between;align-items:center;
+  padding:12px;border:1px solid var(--g200);border-radius:var(--r);margin-bottom:6px;
+  cursor:pointer}
+.saved-item:active{background:var(--bleu-p)}
+.saved-item-del{background:none;border:none;color:var(--rouge);font-size:1em;
+  padding:8px;min-height:40px;min-width:40px;cursor:pointer}
+
+/* ── Reset section btn ── */
+.reset-sec-btn{font-size:.65em;padding:3px 9px;border-radius:20px;border:1.5px solid var(--g200);
+  color:var(--g400);background:none;cursor:pointer;font-weight:600;white-space:nowrap;font-family:inherit;
+  min-height:28px;transition:all .12s}
+.reset-sec-btn:active{border-color:var(--rouge);color:var(--rouge);background:var(--rouge-p)}
+/* ── BOTTOM SHEETS ── */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;pointer-events:none}
+.sheet-overlay.visible{display:flex;flex-direction:column;justify-content:flex-end;pointer-events:auto}
+.sheet{background:var(--blanc);border-radius:20px 20px 0 0;
+  padding-bottom:calc(16px + var(--safe-bottom));
+  max-height:85vh;overflow-y:auto;
+  animation:slideUp .22s ease-out}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;background:var(--g200);border-radius:4px;margin:12px auto 0}
+.sheet-title{padding:14px 20px 10px;font-weight:700;font-size:.95em;color:var(--bleu)}
+.sheet-option{display:flex;align-items:center;gap:14px;padding:14px 20px;
+  cursor:pointer;border-bottom:1px solid var(--g100)}
+.sheet-option:active{background:var(--g50)}
+.sheet-option-icon{font-size:1.7em;width:40px;text-align:center;flex-shrink:0}
+.sheet-option-label{font-weight:700;font-size:.9em}
+.sheet-option-desc{font-size:.76em;color:var(--g400);margin-top:2px}
+.sheet-cancel{margin:10px 20px 0;padding:13px;border:2px solid var(--g200);
+  background:none;border-radius:var(--r);font-family:inherit;font-size:.88em;
+  font-weight:600;color:var(--g600);width:calc(100% - 40px);cursor:pointer;min-height:46px}
+
+/* ── BIBLIOTHÈQUE bottom sheet ── */
+.lib-btn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;
+  padding:8px 14px;border:1.5px solid #6B3FA0;border-radius:8px;
+  background:#F3EEFF;color:#6B3FA0;font-size:.82em;font-weight:600;
+  cursor:pointer;font-family:inherit;min-height:38px}
+.lib-btn:active{background:#6B3FA0;color:#fff}
+.lib-item{padding:12px 20px;border-bottom:1px solid var(--g100);cursor:pointer}
+.lib-item:active{background:var(--g50)}
+.lib-item-cat{font-size:.68em;font-weight:700;color:var(--bleu);
+  background:var(--bleu-p);padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:4px}
+.lib-item-label{font-weight:600;font-size:.85em;margin-bottom:3px}
+.lib-item-preview{font-size:.76em;color:var(--g400);line-height:1.3}
+.lib-cats{display:flex;gap:6px;padding:10px 20px;flex-wrap:wrap;border-bottom:1px solid var(--g100)}
+.lib-cat-pill{padding:5px 12px;border:1.5px solid var(--g200);border-radius:20px;
+  font-size:.75em;font-weight:600;cursor:pointer;background:none;font-family:inherit;min-height:32px}
+.lib-cat-pill:active{background:var(--bleu-p)}
+.lib-cat-pill.active{background:var(--bleu);border-color:var(--bleu);color:#fff}
+
+/* ── CONFIRM MODAL ── */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:20px;pointer-events:none}
+.confirm-overlay.visible{display:flex;pointer-events:auto}
+.confirm-box{background:var(--blanc);border-radius:var(--rl);padding:24px 20px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.confirm-title{font-weight:700;font-size:.95em;color:var(--g800);margin-bottom:8px}
+.confirm-msg{font-size:.82em;color:var(--g600);margin-bottom:20px;line-height:1.5}
+.confirm-btns{display:flex;gap:10px}
+.confirm-cancel{flex:1;padding:12px;border:2px solid var(--g200);background:none;border-radius:var(--r);font-family:inherit;font-size:.88em;font-weight:600;color:var(--g600);cursor:pointer;min-height:46px}
+.confirm-ok{flex:1;padding:12px;border:none;background:var(--rouge);border-radius:var(--r);font-family:inherit;font-size:.88em;font-weight:700;color:#fff;cursor:pointer;min-height:46px}
+/* ── VOICE ── */
+.voice-btn{display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  padding:8px 14px;border:1.5px solid var(--bleu);border-radius:8px;
+  background:var(--bleu-p);color:var(--bleu);font-size:.82em;font-weight:600;
+  cursor:pointer;font-family:inherit;min-height:38px;transition:all .15s}
+.voice-btn:active{filter:brightness(.93)}
+.voice-btn.voice-active{background:var(--rouge);border-color:var(--rouge);color:#fff;
+  animation:vp 1s ease-in-out infinite}
+@keyframes vp{0%,100%{opacity:1}50%{opacity:.55}}
+.toast{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(30px);
+  background:var(--g800);color:#fff;padding:10px 22px;border-radius:var(--r);
+  font-size:.85em;font-weight:500;opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);z-index:999;
+  pointer-events:none;white-space:nowrap}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--vert)}
+.toast.error{background:var(--rouge)}
+
+/* ── Smooth scroll on focus ── */
+input:focus,textarea:focus,select:focus{scroll-margin-top:80px;scroll-margin-bottom:100px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Audit TMD</div>
+    <div class="topbar-sub">Saisie mobile — export PC &nbsp;<span id="autoSaveTs" style="opacity:.6"></span></div>
+  </div>
+  <div class="topbar-right">
+    <button class="top-btn" onclick="openSendSheet()">📤 Envoyer</button>
+    <button class="top-btn" onclick="openLibManage()" style="background:rgba(107,63,160,.4)">📚</button>
+    <label class="top-btn" style="cursor:pointer">⬆ <input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="app" id="app">
+  <div class="saved-panel" id="savedList" style="display:none"></div>
+
+  <!-- ═══ SECTION PAGE DE GARDE ═══ -->
+  <div class="section">
+    <div class="sec-head open" onclick="toggleSec(this)">
+      <div class="sec-title">🏷 Page de garde <span class="sec-badge">Identification</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('garde',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-garde">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body open">
+      <div class="row2">
+        <div class="field"><label>Année</label><input type="text" data-f="annee" placeholder="2025" inputmode="numeric"></div>
+        <div class="field"><label>Établissement</label><input type="text" data-f="nom_etab" placeholder="IPCMS"></div>
+      </div>
+      <div class="field"><label>Code UMR</label><input type="text" data-f="code_umr" placeholder="Ex : UMR7504"></div>
+      <div class="field"><label>Adresse</label><input type="text" data-f="adresse_etab" placeholder="Adresse complète"></div>
+      <div class="row2">
+        <div class="field"><label>Responsable légal</label><input type="text" data-f="resp_legal" placeholder="Nom (CNRS)"></div>
+        <div class="field"><label>Directeur</label><input type="text" data-f="directeur" placeholder="Nom"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>SIREN</label><input type="text" data-f="siren" inputmode="numeric" placeholder="180 089 013"></div>
+        <div class="field"><label>SIRET</label><input type="text" data-f="siret" inputmode="numeric" placeholder="180 089 013 04217"></div>
+      </div>
+      <div class="sub">Conseiller à la sécurité</div>
+      <div class="row2">
+        <div class="field"><label>Rédacteur</label><input type="text" data-f="nom_redacteur" placeholder="Nom"></div>
+        <div class="field"><label>N° certificat</label><input type="text" data-f="cert_redacteur" inputmode="numeric" placeholder="11845"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Validité rédacteur</label><input type="text" data-f="date_valid_red" placeholder="JJ/MM/AAAA" inputmode="numeric"></div>
+        <div class="field"><label>Nb visites</label><input type="number" data-f="nb_visites" inputmode="numeric" placeholder="1" min="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Visiteur</label><input type="text" data-f="nom_visiteur" placeholder="Nom"></div>
+        <div class="field"><label>N° certificat</label><input type="text" data-f="cert_visiteur" inputmode="numeric" placeholder="12603"></div>
+      </div>
+      <div class="field"><label>Validité visiteur</label><input type="text" data-f="date_valid_vis" placeholder="JJ/MM/AAAA" inputmode="numeric"></div>
+      <div class="field"><label>Statut conseiller</label>
+        <select data-f="interne_externe"><option value="Interne">Interne CNRS</option><option value="Externe">Externe</option></select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Date transmission</label><input type="text" data-f="date_transmission" id="m_date_trans" placeholder="JJ/MM/AAAA" inputmode="numeric" oninput="updateValidite()" onchange="updateValidite()"></div>
+        <div class="field"><label>Validité (auto)</label><input type="text" id="m_date_valid" readonly placeholder="Calculée auto"></div>
+      </div>
+      <div class="field"><label>Destinataire</label><input type="text" data-f="destinataire" placeholder="Nom – Fonction"></div>
+      <div class="field"><label>Tél. conseiller</label><input type="tel" data-f="tel_conseiller" placeholder="XX XX XX XX XX"></div>
+      <div class="field"><label>Mode(s) de transport</label><input type="text" data-f="mode_transport" placeholder="Ex : Routier, Aérien"></div>
+      <div class="field"><label>Classe(s) MD</label><input type="text" data-f="classes_md" placeholder="Ex : 3, 6.1, 8, 9"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION ORGANISATION ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">🏢 Organisation <span class="sec-badge">Section 1</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('org',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-org">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div class="field"><label>Établissements secondaires</label>
+        <select data-f="etab_secondaire"><option value="non">Non</option><option value="oui">Oui</option></select>
+      </div>
+      <div class="field"><label>Activité détaillée TMD</label>
+        <textarea data-f="activite_detail" placeholder="Type d'opérations..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('activite_detail')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>Gestion administrative</label>
+        <textarea data-f="gestion_admin" placeholder="FDS, formations..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('gestion_admin')">📚 Bibliothèque</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Contrat transport</label>
+          <select data-f="type_contrat"><option value="type">Contrat type</option><option value="specifique">Spécifique</option><option value="les_deux">Les deux</option></select>
+        </div>
+        <div class="field"><label>Précisions contrat</label><input type="text" data-f="precisions_contrat" placeholder="Détails..."></div>
+      </div>
+      <div class="field"><label>Gestion opérationnelle</label>
+        <textarea data-f="gestion_ope" placeholder="Réception, stockage..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('gestion_ope')">📚 Bibliothèque</button>
+      </div>
+      <div class="sub">Installations classées</div>
+      <div class="row2">
+        <div class="field"><label>ICPE</label><select data-f="icpe"><option value="oui">Oui</option><option value="non">Non</option></select></div>
+        <div class="field"><label>Seveso</label><select data-f="seveso"><option value="non">Non</option><option value="seuil_haut">Seuil Haut</option><option value="seuil_bas">Seuil Bas</option></select></div>
+      </div>
+      <div class="field"><label>Rubriques ICPE</label><textarea data-f="rubriques_icpe" placeholder="Rubriques en rapport avec le TMD..." style="min-height:60px"></textarea></div>
+      <div class="sub">Rôle dans le TMD</div>
+      <div class="check-row" id="rolesContainer"></div>
+      <div class="field"><label>Autres rôles</label><input type="text" data-f="role_autres" placeholder="Préciser..."></div>
+      <div class="row2">
+        <div class="field"><label>National uniquement</label><select data-f="national_seul"><option value="non">Non</option><option value="oui">Oui</option></select></div>
+        <div class="field"><label>Déclaration ASN</label><select data-f="decl_asn"><option value="non">Non</option><option value="oui">Oui</option></select></div>
+      </div>
+      <div class="sub">Services concernés</div>
+      <div id="servicesList"></div>
+      <button class="add-btn" onclick="addService()">+ Ajouter un service</button>
+      <div class="sub">Politique TMD</div>
+      <div class="field">
+        <textarea data-f="politique_tmd" placeholder="Politique QHSE..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('politique_tmd')">📚 Bibliothèque</button>
+      </div>
+      <div class="sub">Interlocuteurs principaux</div>
+      <div id="interlocList"></div>
+      <button class="add-btn" onclick="addInterloc()">+ Ajouter un interlocuteur</button>
+      <div class="sub">Sites couverts</div>
+      <div id="sitesCouvertsList"></div>
+      <button class="add-btn" onclick="addSiteCouvert()">+ Ajouter un site couvert</button>
+      <div class="sub">Autres sites</div>
+      <div id="autresSitesList"></div>
+      <button class="add-btn" onclick="addAutreSite()">+ Ajouter un autre site</button>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION ACTIVITÉS ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">📦 Activités de l'année <span class="sec-badge">Section 2</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('activites',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-activites">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div class="sub">MD emballées (2.1.1)</div>
+      <div id="mdEmballeesList"></div>
+      <button class="add-btn" onclick="addMdEmballe()">+ Ajouter une MD</button>
+      <div class="sub">Autres opérations</div>
+      <div class="field"><label>MD chargées</label>
+        <select data-f="md_chargees_statut"><option value="nc">Non Concerné</option><option value="concerne">Concerné</option></select>
+      </div>
+      <div class="field"><label>Commentaires chargement</label>
+        <textarea data-f="md_chargees_comm" placeholder="Opérations de chargement..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('md_chargees_comm')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>MD déchargées</label>
+        <textarea data-f="md_decharg_comm" placeholder="Réceptions, nombre..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('md_decharg_comm')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>MD expédiées</label>
+        <textarea data-f="md_exped_comm" placeholder="Expéditions, fréquence..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('md_exped_comm')">📚 Bibliothèque</button>
+      </div>
+      <div class="sub">MD à haut risque</div>
+      <div class="row2">
+        <div class="field"><label>Tab. 1.10.3.1.2</label><select data-f="haut_risque_1"><option value="non">NON</option><option value="oui">OUI</option></select></div>
+        <div class="field"><label>Plan sûreté</label><select data-f="plan_surete"><option value="non">NON</option><option value="oui">OUI</option></select></div>
+      </div>
+      <div class="field"><label>Commentaires haut risque</label>
+        <textarea data-f="haut_risque_comm" placeholder="Vérification..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('haut_risque_comm')">📚 Bibliothèque</button>
+      </div>
+      <div class="sub">Parcs stationnement (2.3.2)</div>
+      <div class="row2">
+        <div class="field"><label>Parcs soumis 2.3.2</label><select data-f="parcs_stat"><option value="non">NON</option><option value="oui">OUI</option></select></div>
+        <div class="field"><label>Nombre de parcs</label><input type="text" data-f="nbre_parcs" inputmode="numeric" placeholder="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION ÉVÉNEMENTS ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">⚠️ Événements <span class="sec-badge">Section 3</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('evenements',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-evenements">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div class="row2">
+        <div class="field"><label>Événements déclarés</label><input type="text" data-f="nb_evenements" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Accidents</label><input type="text" data-f="nb_accidents" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="field"><label>Détail événements</label>
+        <textarea data-f="detail_evenements" placeholder="Détails..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('detail_evenements')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>Détail accidents</label>
+        <textarea data-f="detail_accidents" placeholder="Détails..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('detail_accidents')">📚 Bibliothèque</button>
+      </div>
+      <div class="sub">Classe 7 (matières radioactives)</div>
+      <div class="row2">
+        <div class="field"><label>Événements significatifs</label><input type="text" data-f="evt_signif_cl7" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>EIT (hors INES)</label><input type="text" data-f="evt_eit_cl7" inputmode="numeric" placeholder="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION INTERVENTIONS ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">📋 Interventions <span class="sec-badge">Section 4</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('interventions',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-interventions">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div id="visitesList"></div>
+      <button class="add-btn" onclick="addVisite()">+ Ajouter une visite</button>
+      <div class="field"><label>Audits internes</label>
+        <textarea data-f="audits_internes" placeholder="Audits réalisés..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('audits_internes')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>Audits externes</label>
+        <textarea data-f="audits_externes" placeholder="ISO, SQAS..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('audits_externes')">📚 Bibliothèque</button>
+      </div>
+      <div class="field"><label>Inspections</label>
+        <textarea data-f="inspections" placeholder="DREAL, autres..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('inspections')">📚 Bibliothèque</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION THÈMES ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">✅ Actions & Vérifications <span class="sec-badge">Thèmes 1–6</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('actions',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-actions">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body" id="themesContainer"></div>
+  </div>
+
+  <!-- ═══ SECTION FORMATION ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">🎓 Formation <span class="sec-badge">Tableaux 4.2–4.6</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('formation',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-formation">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div class="sub">4.2 Conducteurs ADR (chap. 8.2)</div>
+      <div class="row2">
+        <div class="field"><label>Base</label><input type="text" data-f="base_4_2" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Citernes</label><input type="text" data-f="c_4_2" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Classe 1</label><input type="text" data-f="cl1_4_2" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Classe 7</label><input type="text" data-f="cl7_4_2" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Citernes pétroliers</label><input type="text" data-f="petrole_4_2" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Citernes GPL</label><input type="text" data-f="gpl_4_2" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="sub">4.3 Experts ADN (chap. 8.2)</div>
+      <div class="row2">
+        <div class="field"><label>Base</label><input type="text" data-f="base_4_3" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>March. sèches</label><input type="text" data-f="mseche_4_3" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Bateau-citerne</label><input type="text" data-f="bateau_citerne_4_3" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Combiné</label><input type="text" data-f="combine_4_3" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Spéc. Gaz</label><input type="text" data-f="gaz_4_3" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Spéc. Chimie</label><input type="text" data-f="chimie_4_3" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="sub">4.4 Intervenants 1.3 ADR</div>
+      <div id="form44List"></div>
+      <button class="add-btn" onclick="addForm44()">+ Ajouter service 4.4</button>
+      <div class="field"><label>Commentaires 4.4</label><textarea data-f="theme4_4_gen" placeholder="Commentaires..." style="min-height:60px"></textarea></div>
+      <div class="sub">4.5 Intervenants 1.3 RID</div>
+      <div id="form45List"></div>
+      <button class="add-btn" onclick="addForm45()">+ Ajouter service 4.5</button>
+      <div class="field"><label>Commentaires 4.5</label><textarea data-f="theme4_5_gen" placeholder="Commentaires..." style="min-height:60px"></textarea></div>
+      <div class="sub">4.6 Radioprotection classe 7</div>
+      <div class="row2">
+        <div class="field"><label>Service</label><input type="text" data-f="theme4_6_service" placeholder="Service concerné"></div>
+        <div class="field"><label>Nb formés</label><input type="text" data-f="nbre_4_6" inputmode="numeric" placeholder="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION PROPOSITIONS ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">💡 Propositions <span class="sec-badge">Plan d'action</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('propositions',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-propositions">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <div class="field">
+        <textarea data-f="propositions" placeholder="1. Former le personnel...&#10;2. Mettre en conformité..." style="min-height:120px"></textarea>
+        <button class="lib-btn" onclick="openLibPicker('propositions')">📚 Bibliothèque</button>
+      </div>
+    </div>
+  </div>
+  <!-- ═══ SECTION SYNTHÈSE ═══ -->
+  <div class="section">
+    <div class="sec-head" onclick="toggleSec(this)">
+      <div class="sec-title">📊 Synthèse <span class="sec-badge">Conformité</span></div>
+      <div class="sec-right"><button class="clr-btn" onclick="clearSec('synthese',event)" title="Vider cette section">🗑</button><span class="sec-pct pct-red" id="pct-synthese">0%</span><span class="chevron">▼</span></div>
+    </div>
+    <div class="sec-body">
+      <p style="font-size:.75em;color:var(--g400);margin-bottom:10px">Appuyez sur une case pour cocher : <strong style="color:var(--vert)">F</strong>=Fort · <strong style="color:var(--bleu)">EC</strong>=En cours · <strong style="color:var(--orange)">A</strong>=À améliorer · <strong style="color:var(--g600)">NC</strong>=Non concerné</p>
+      <div id="synthContainer"></div>
+      <div class="field" style="margin-top:14px">
+        <label>Résumé / Synthèse</label>
+        <textarea data-f="resume_synthese" placeholder="Synthèse des observations..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('resume_synthese')">📚 Bibliothèque</button>
+      </div>
+      <div class="field">
+        <label>Recommandation principale</label>
+        <textarea data-f="recommandation" placeholder="Points critiques..."></textarea>
+        <button class="lib-btn" onclick="openLibPicker('recommandation')">📚 Bibliothèque</button>
+      </div>
+      <div class="field">
+        <label>Remerciements</label>
+        <textarea data-f="remerciements" placeholder="Personnes ayant participé..."></textarea>
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- /app -->
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <button class="bot-btn primary" onclick="saveAudit()"><span class="bot-icon">💾</span>Sauvegarder</button>
+  <button class="bot-btn send" onclick="openSendSheet()"><span class="bot-icon">📤</span>Envoyer vers PC</button>
+  <button class="bot-btn" onclick="toggleSaved()"><span class="bot-icon">📂</span>Mes audits<span id="savedCount" style="background:var(--bleu);color:#fff;border-radius:8px;padding:0 5px;font-size:.7em;margin-top:1px;display:none">0</span></button>
+  <button class="bot-btn danger" onclick="clearForm()"><span class="bot-icon">✕</span>Effacer</button>
+</div>
+
+<!-- SHEET MES AUDITS -->
+<div class="sheet-overlay" id="savedSheet" onclick="if(event.target===this)closeSavedSheet()">
+  <div class="sheet" style="max-height:80vh">
+    <div class="sheet-handle"></div>
+    <div style="padding:12px 20px 8px;display:flex;justify-content:space-between;align-items:center">
+      <strong style="font-size:.9em;color:var(--bleu)">📂 Mes audits</strong>
+      <button onclick="closeSavedSheet()" style="background:none;border:none;font-size:1.2em;cursor:pointer;color:var(--g400);padding:6px;min-height:40px">✕</button>
+    </div>
+    <div id="savedSheetList" style="overflow-y:auto;max-height:55vh;padding:0 0 8px"></div>
+    <div style="padding:0 20px">
+      <button class="sheet-cancel" onclick="closeSavedSheet()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET ENVOI -->
+<div class="sheet-overlay" id="sendSheet" onclick="if(event.target===this)closeSendSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📤 Envoyer vers le PC</div>
+    <p style="padding:0 20px 12px;font-size:.78em;color:var(--g600)">Importez le fichier .json sur l'outil PC via le bouton ⬆ JSON.</p>
+    <div class="sheet-option" onclick="sendViaShare()">
+      <div class="sheet-option-icon">📨</div>
+      <div><div class="sheet-option-label">Partage natif iOS / Android</div><div class="sheet-option-desc">Mail, WhatsApp, Drive, AirDrop… (recommandé)</div></div>
+    </div>
+    <div class="sheet-option" onclick="sendViaMail()">
+      <div class="sheet-option-icon">✉️</div>
+      <div><div class="sheet-option-label">Envoyer par e-mail</div><div class="sheet-option-desc">Télécharge le fichier + ouvre votre app Mail</div></div>
+    </div>
+    <div class="sheet-option" onclick="sendViaCopy()">
+      <div class="sheet-option-icon">📋</div>
+      <div><div class="sheet-option-label">Copier le JSON</div><div class="sheet-option-desc">Collez dans un mail, message ou fichier</div></div>
+    </div>
+    <div style="padding:0 20px">
+      <button class="sheet-cancel" onclick="closeSendSheet()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET BIBLIOTHÈQUE -->
+<div class="sheet-overlay" id="libSheet" onclick="if(event.target===this)closeLibSheet()">
+  <div class="sheet" style="max-height:88vh">
+    <div class="sheet-handle"></div>
+    <div style="padding:12px 20px 8px;display:flex;justify-content:space-between;align-items:center">
+      <strong style="font-size:.9em;color:#6B3FA0">📚 Bibliothèque</strong>
+      <button onclick="closeLibSheet()" style="background:none;border:none;font-size:1.2em;cursor:pointer;color:var(--g400);padding:6px;min-height:40px">✕</button>
+    </div>
+    <div class="lib-cats" id="libCatPills"></div>
+    <div id="libSheetList" style="overflow-y:auto;max-height:55vh;padding-bottom:8px"></div>
+    <div style="padding:0 20px">
+      <button class="sheet-cancel" onclick="closeLibSheet()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET GESTION BIBLIOTHÈQUE -->
+<div class="sheet-overlay" id="libManageSheet" onclick="if(event.target===this)closeLibManage()">
+  <div class="sheet" style="max-height:90vh">
+    <div class="sheet-handle"></div>
+    <div style="padding:12px 20px 8px;display:flex;justify-content:space-between;align-items:center">
+      <strong style="font-size:.9em;color:#6B3FA0">📚 Gérer la bibliothèque</strong>
+      <button onclick="closeLibManage()" style="background:none;border:none;font-size:1.2em;cursor:pointer;color:var(--g400);padding:6px;min-height:40px">✕</button>
+    </div>
+    <div style="padding:0 20px 10px;display:flex;gap:8px">
+      <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;border:1.5px solid var(--vert);border-radius:var(--r);color:var(--vert);font-weight:600;font-size:.82em;cursor:pointer;background:var(--vert-p)">⬇ Importer<input type="file" accept=".json" onchange="importLibMobile(event)" style="display:none"></label>
+      <button onclick="exportLibMobile()" style="flex:1;padding:10px;border:1.5px solid var(--bleu);border-radius:var(--r);color:var(--bleu);font-weight:600;font-size:.82em;cursor:pointer;background:var(--bleu-p);font-family:inherit">⬆ Exporter</button>
+    </div>
+    <div style="padding:0 20px 12px;border-bottom:1px solid var(--g100)">
+      <p style="font-size:.75em;font-weight:700;color:var(--g600);margin-bottom:8px">+ Ajouter un commentaire rapide</p>
+      <select id="lmCat" style="width:100%;padding:10px;border:2px solid var(--g200);border-radius:var(--r);font-size:15px;font-family:inherit;margin-bottom:8px;background:var(--blanc)"></select>
+      <input type="text" id="lmLabel" placeholder="Titre court" style="width:100%;padding:10px;border:2px solid var(--g200);border-radius:var(--r);font-size:15px;font-family:inherit;margin-bottom:8px">
+      <textarea id="lmText" placeholder="Texte complet du commentaire…" rows="3" style="width:100%;padding:10px;border:2px solid var(--g200);border-radius:var(--r);font-size:15px;font-family:inherit;resize:vertical;margin-bottom:8px"></textarea>
+      <button onclick="saveLibMobile()" style="width:100%;padding:12px;background:#6B3FA0;color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:.88em;font-weight:700;cursor:pointer;min-height:46px">💾 Enregistrer</button>
+    </div>
+    <div id="libManageList" style="overflow-y:auto;max-height:35vh;padding:8px 0 8px"></div>
+    <div style="padding:0 20px 4px">
+      <button class="sheet-cancel" onclick="closeLibManage()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Confirmation</div>
+    <div class="confirm-msg" id="confirmMsg">Cette action est irréversible.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Annuler</button>
+      <button class="confirm-ok" id="confirmOkBtn">Effacer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG — Identique à l'outil PC
+// ═══════════════════════════════════════════════════
+
+const SS=["Classement/identification des produits sortants","Gestion des réceptions/déchargement en colis","Gestion des vidanges de citerne","Gestion des emballages","Préparation des colis","Gestion de la documentation","Gestion des opérations de chargement de colis","Contrôle des unités de transport au départ du site","Respect des règles de stationnement/circulation","Maîtrise de la sous-traitance","Transmission des informations TMD aux prestataires","Gestion de la sûreté","Application des instructions existantes sur le terrain","Formation des intervenants","Gestion des déchets dangereux au transport","Gestion des incidents/accidents"];
+const SO=["fort","encours","ameliorer","nc"];
+const SO_LABELS={"fort":"F","encours":"EC","ameliorer":"A","nc":"NC"};
+const TH=[
+  {id:"t1",title:"Thème 1 : Identification des MD",tasks:["Classification des MD à expédier/emballer/charger","Gestion des FDS","Classement et identification (fabricant)","Identification des MD déchargées","Classification des déchets"],ph:["Informations disponibles ?","Classeur FDS à jour ?","Fabrication pour expédition ?","Vérification à réception ?","BSD correctement renseigné ?"]},
+  {id:"t2",title:"Thème 2 : Achats et sous-traitance",tasks:["Contenants agréés","Contenants non agréés (QE, QL)","Matériel étiquetage/marquage","Achats de prestations MD","Transmission infos TMD au prestataire","CSTMD du sous-traitant","Cahier des charges sous-traitants","Conformité des prestations"],ph:["GRV agréés ?","Utilisés ?","Conformes GHS/ADR ?","Exigences TMD dans le marché ?","Informations transmises ?","Déclaré ?","À jour ?","Conformes ?"]},
+  {id:"t3",title:"Thème 3 : Emballages, chargement",tasks:["Contrôle contenants reçus","Validité certificats agrément","Respect instructions emballage","Marquage/étiquetage colis","Marquage/étiquetage suremballages","Procédure préparation colis","Vérification véhicules","Contrôle chargement","Contrôle déchargement","Calage et arrimage","Protocoles de sécurité"],ph:["Vérification visuelle ?","Certificats suivis ?","Instructions respectées ?","Conforme ADR ?","Suremballages utilisés ?","Procédure formalisée ?","Contrôle des véhicules ?","Chargement autonome ?","Contrôle formel ?","Vérifié ?","En place ?"]},
+  {id:"t4",title:"Thème 4 : Formation",tasks:["Formation intervenants (1.3)","Formation conducteurs (8.2.1)","Évolution réglementaire","Sensibilisation personnel","Relevés de formations","Veille réglementaire"],ph:["Formation 1.3 ADR dispensée ?","Conducteurs TMD ?","ADR communiqué ?","Programme structuré ?","Relevés conservés ?","Veille assurée ?"]},
+  {id:"t5",title:"Thème 5 : Événements sécurité",tasks:["Procédure incident/accident","Moyens d'intervention","Tests procédure d'urgence","Alerte CSTMD (1.8.3.6)","Suivi action CSTMD"],ph:["Procédure spécifique TMD ?","En place et contrôlés ?","Exercice réalisé ?","Dans la procédure ?","Formalisé ?"]},
+  {id:"t6",title:"Thème 6 : Plan de sûreté",tasks:["Obligations générales (1.10.1-1.10.2)","Obligation plan sûreté (1.10.3)","Responsable sûreté","Plan de sûreté / MD haut risque"],ph:["Accès restreint ?","Applicable ?","Désigné ?","MD identifiées ?"]}
+];
+const ROLES=[
+  {f:"role_expediteur",l:"Expéditeur"},{f:"role_chargeur",l:"Chargeur"},{f:"role_dechargeur",l:"Déchargeur"},
+  {f:"role_transporteur",l:"Transporteur"},{f:"role_emballeur",l:"Emballeur"},
+  {f:"role_destinataire",l:"Destinataire"},{f:"role_remplisseur",l:"Remplisseur"}
+];
+
+// ═══════════════════════════════════════════════════
+// BIBLIOTHÈQUE — Données par défaut (même que PC)
+// ═══════════════════════════════════════════════════
+
+const DEFAULT_CATS=['Général','Organisation','Formation','Emballage & Conditionnement','Documentation','Événements & Accidents','Sûreté','Identification'];
+const DEFAULT_COMMENTS=[
+  {id:1,category:'Général',label:'Bonne coopération lors de l\'audit',text:'L\'établissement a fait preuve d\'une excellente coopération tout au long de la mission d\'audit. Les interlocuteurs désignés étaient disponibles, les documents demandés ont été communiqués rapidement et les locaux ont été accessibles sans difficulté.'},
+  {id:2,category:'Général',label:'Audit sans accès complet',text:'L\'audit a été réalisé à partir des éléments transmis par l\'établissement. L\'accès à certains sites ou documents n\'a pas été possible dans le cadre de cette intervention ; des vérifications complémentaires seront réalisées lors de la prochaine visite.'},
+  {id:3,category:'Général',label:'Aucun événement ni accident',text:'Aucun événement ni accident lié au transport de marchandises dangereuses n\'a été porté à la connaissance du conseiller à la sécurité au cours de l\'année couverte par le présent rapport.'},
+  {id:4,category:'Formation',label:'Formation 1.3 ADR à planifier',text:'La formation des intervenants selon l\'article 1.3 de l\'ADR n\'a pas été réalisée au cours de l\'année écoulée. Il est recommandé d\'organiser une session de formation dans les plus brefs délais, et de conserver les justificatifs de présence (feuilles d\'émargement, attestations).'},
+  {id:5,category:'Formation',label:'Formation 1.3 ADR conforme et à jour',text:'La formation des intervenants selon l\'article 1.3 de l\'ADR est à jour. Les relevés de formations (feuilles d\'émargement, attestations) sont conservés et disponibles sur demande. La périodicité des formations est respectée.'},
+  {id:6,category:'Formation',label:'Veille réglementaire à renforcer',text:'La veille sur les évolutions réglementaires (ADR 2025, circulaires, arrêtés) n\'est pas formalisée au sein de l\'établissement. Il est recommandé de désigner un référent chargé de cette veille et de diffuser les mises à jour aux personnels concernés.'},
+  {id:7,category:'Emballage & Conditionnement',label:'Emballages agréés conformes',text:'Les emballages utilisés pour l\'expédition de marchandises dangereuses sont de type agréé et conformes aux prescriptions de l\'ADR. Les certificats d\'agrément sont disponibles, valides et en correspondance avec les quantités et nature des matières transportées.'},
+  {id:8,category:'Emballage & Conditionnement',label:'Absence d\'emballages agréés',text:'Il a été constaté l\'utilisation d\'emballages non agréés pour le transport de marchandises dangereuses. Cette situation constitue une non-conformité à l\'ADR. Il est impératif de se procurer des emballages portant la marque d\'agrément ONU correspondante.'},
+  {id:9,category:'Documentation',label:'Documents de transport conformes',text:'Les documents de transport (lettres de voiture, déclarations d\'expédition) sont correctement renseignés et comportent toutes les informations obligatoires requises par l\'ADR : numéro ONU, désignation officielle, classe, groupe d\'emballage, quantité, et coordonnées expéditeur/destinataire.'},
+  {id:10,category:'Documentation',label:'FDS non conformes à mettre à jour',text:'Certaines fiches de données de sécurité (FDS) consultées lors de l\'audit ne sont pas conformes au règlement REACH (format 16 rubriques, section 14 relative au transport). Il est recommandé de les actualiser auprès des fournisseurs et de procéder à une mise à jour du classeur FDS.'},
+  {id:11,category:'Sûreté',label:'Pas de MD à haut risque',text:'L\'établissement ne détient pas de marchandises dangereuses reprises dans le tableau 1.10.3.1.2 de l\'ADR en quantités supérieures aux seuils définis. Un plan de sûreté n\'est donc pas requis au titre du 1.10.3.2.'},
+  {id:12,category:'Sûreté',label:'Plan de sûreté requis et à établir',text:'L\'établissement détient des marchandises dangereuses à haut risque (tableau 1.10.3.1.2) en quantités dépassant les seuils fixés. L\'obligation de mettre en place un plan de sûreté conformément au 1.10.3.2 de l\'ADR est donc applicable. Ce plan est à élaborer dans les meilleurs délais.'},
+  {id:13,category:'Identification',label:'Classification ADR correcte',text:'Les marchandises dangereuses utilisées par l\'établissement sont correctement identifiées et classifiées conformément à l\'ADR. Les numéros ONU, désignations officielles de transport et groupes d\'emballage sont exacts et vérifiés.'},
+  {id:14,category:'Identification',label:'Incertitude de classification à lever',text:'Pour certaines matières, la classification ADR n\'est pas établie avec certitude. Il est recommandé de consulter les FDS (section 14) ou de solliciter l\'avis du fabricant/fournisseur, voire d\'un expert en classification, pour déterminer le statut exact de ces produits.'},
+  {id:15,category:'Organisation',label:'Politique TMD non formalisée',text:'L\'établissement ne dispose pas de politique formalisée relative au transport de marchandises dangereuses. Il est recommandé d\'intégrer les exigences TMD dans la politique QHSE existante ou de rédiger un document spécifique définissant les responsabilités et objectifs en matière de transport sûr.'}
+];
+let lib={categories:[...DEFAULT_CATS],comments:[...DEFAULT_COMMENTS]};
+try{const s=localStorage.getItem('tmd_library');if(s){const p=JSON.parse(s);if(p&&p.comments&&p.comments.length)lib=p;}}catch(e){}
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let synthState={};  // {i: "fort"|"encours"|"ameliorer"|"nc"}
+let libPickerTarget=null;
+let libCatFilter='all';
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+function init(){
+  buildSynthTable();
+  buildRoles();
+  buildThemes();
+  addService(); addInterloc(); addSiteCouvert(); addAutreSite();
+  addMdEmballe(); addVisite(); addForm44(); addForm45();
+  injectVoiceButtons(); // après tout le DOM généré
+  try{
+    const a=JSON.parse(localStorage.getItem('tmd_mobile_auto'));
+    if(a&&Object.keys(a).some(k=>typeof a[k]==='string'&&a[k].trim())){setFormData(a);showToast('Brouillon restauré');}
+  }catch(e){}
+  updateAllPct();
+  updateSavedCount();
+  // auto-save 20s
+  setInterval(()=>{
+    localStorage.setItem('tmd_mobile_auto',JSON.stringify(getFormData()));
+    const ts=document.getElementById('autoSaveTs');
+    if(ts)ts.textContent='✓ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  },20000);
+  // live pct update + unsaved indicator
+  let _t=null;
+  document.addEventListener('input',()=>{
+    clearTimeout(_t);_t=setTimeout(updateAllPct,120);
+    const ts=document.getElementById('autoSaveTs');
+    if(ts&&!ts.textContent.startsWith('●'))ts.textContent='● Non sauvegardé';
+  },true);
+  document.addEventListener('change',()=>{clearTimeout(_t);_t=setTimeout(updateAllPct,120)},true);
+  // date mask on all date fields
+  document.querySelectorAll('[placeholder="JJ/MM/AAAA"]').forEach(applyDateMask);
+  // scroll on focus
+  document.addEventListener('focusin',e=>{
+    if(!e.target.matches('input,textarea,select'))return;
+    setTimeout(()=>e.target.scrollIntoView({behavior:'smooth',block:'center'}),300);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD SYNTHESE
+// ═══════════════════════════════════════════════════
+function buildSynthTable(){
+  const ct=document.getElementById('synthContainer');
+  ct.innerHTML='';
+  SS.forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='synth-row';
+    div.innerHTML=`<span class="synth-label">${esc(s)}</span><div class="synth-radios">`+
+      SO.map(o=>`<button class="synth-radio-btn ${o}" data-idx="${i}" data-val="${o}" onclick="toggleSynth(${i},'${o}',this)">${SO_LABELS[o]}</button>`).join('')+
+      `</div>`;
+    ct.appendChild(div);
+  });
+}
+function toggleSynth(i,val,btn){
+  const prev=synthState[i];
+  if(prev===val){delete synthState[i];btn.classList.remove('sel');}
+  else{
+    synthState[i]=val;
+    document.querySelectorAll(`.synth-radio-btn[data-idx="${i}"]`).forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
+  updateAllPct();
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD RÔLES
+// ═══════════════════════════════════════════════════
+function buildRoles(){
+  const ct=document.getElementById('rolesContainer');
+  ct.innerHTML='';
+  ROLES.forEach(r=>{
+    const div=document.createElement('div');
+    div.className='check-item';
+    div.innerHTML=`<input type="checkbox" data-f="${r.f}" id="cb_${r.f}"><label style="cursor:pointer">${esc(r.l)}</label>`;
+    const cb=div.querySelector('input');
+    div.addEventListener('click',e=>{if(e.target!==cb){cb.checked=!cb.checked;}div.classList.toggle('checked',cb.checked);updateAllPct();});
+    ct.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD THÈMES
+// ═══════════════════════════════════════════════════
+function buildThemes(){
+  const ct=document.getElementById('themesContainer');
+  TH.forEach((t,ti)=>{
+    const block=document.createElement('div');
+    block.className='theme-block';
+    // header
+    const hdr=document.createElement('div');
+    hdr.className='theme-title'+(ti===0?' th-open':'');
+    hdr.innerHTML=`<span>${esc(t.title)}</span><span><span class="theme-pct pct-red" id="thpct-${t.id}">0%</span><span class="th-chevron">▼</span></span>`;
+    hdr.addEventListener('click',()=>{
+      hdr.classList.toggle('th-open');
+      body.classList.toggle('th-open');
+    });
+    // body
+    const body=document.createElement('div');
+    body.className='theme-body'+(ti===0?' th-open':'');
+    let h='';
+    t.tasks.forEach((tk,i)=>{
+      const fS=`${t.id}_s_${i}`, fC=`${t.id}_c_${i}`;
+      h+=`<div class="task-row">
+        <div class="task-label">${esc(tk)}</div>
+        <div class="task-statut">
+          ${['OUI','NON','PARTIEL','N/V','N/A'].map(s=>`<button class="statut-btn" data-field="${fS}" data-val="${s}" onclick="selectStatut('${fS}','${s}',this)">${s}</button>`).join('')}
+        </div>
+        <textarea class="task-comment" data-f="${fC}" rows="2" placeholder="${esc(t.ph[i])}"></textarea>
+      </div>`;
+    });
+    h+=`<div class="field" style="margin-top:8px">
+      <label style="font-size:.78em">Commentaires généraux :</label>
+      <textarea data-f="${t.id}_gen" style="min-height:60px;width:100%;padding:10px;border:2px solid var(--g200);border-radius:var(--r);font-size:15px;font-family:inherit" placeholder="Commentaires généraux..."></textarea>
+      <button class="lib-btn" data-key="${t.id}_gen" onclick="openLibPicker(this.dataset.key)">📚 Bibliothèque</button>
+    </div>`;
+    body.innerHTML=h;
+    block.appendChild(hdr);
+    block.appendChild(body);
+    ct.appendChild(block);
+  });
+}
+function selectStatut(field,val,btn){
+  const allBtns=document.querySelectorAll(`.statut-btn[data-field="${field}"]`);
+  allBtns.forEach(b=>{b.className='statut-btn';});
+  const wasSelected=btn.dataset.selected==='1';
+  if(!wasSelected){btn.classList.add(`sel-${val.toLowerCase().replace('/','')}`);btn.dataset.selected='1';}
+  else{btn.dataset.selected='';}
+  updateAllPct();
+}
+
+// ═══════════════════════════════════════════════════
+// TABLEAUX DYNAMIQUES
+// ═══════════════════════════════════════════════════
+function mkCard(containerId,fields,data){
+  const ct=document.getElementById(containerId);
+  const div=document.createElement('div');div.className='dyn-card';
+  let h=`<button class="dyn-card-del" onclick="this.closest('.dyn-card').remove();updateAllPct()">✕</button>`;
+  fields.forEach((f,i)=>{
+    h+=`<div class="field"><label>${esc(f.label)}</label>`;
+    if(f.type==='select'){
+      const curVal=data?data[i]:'';
+      h+=`<select data-dynf="${f.key}">`+f.opts.map(o=>`<option value="${o.v}"${curVal===o.v?' selected':''}>${esc(o.l)}</option>`).join('')+'</select>';
+    }else{
+      const curVal=data?esc(data[i]||''):'';
+      h+=`<input type="${f.type||'text'}" ${f.inputmode?`inputmode="${f.inputmode}"`:''}  data-dynf="${f.key}" placeholder="${esc(f.ph||'')}" value="${curVal}">`;
+    }
+    h+=`</div>`;
+  });
+  div.innerHTML=h;ct.appendChild(div);
+}
+function addService(d){mkCard('servicesList',[{key:'etab',label:'Établissement',ph:'Nom'},{key:'service',label:'Service',ph:'Nom du service'},{key:'pers',label:'Nb personnes',ph:'0',inputmode:'numeric'}],d);}
+function addInterloc(d){mkCard('interlocList',[{key:'nom',label:'Interlocuteur',ph:'Nom'},{key:'fn',label:'Fonction',ph:'Fonction'},{key:'contact',label:'Contact',ph:'Tél / Mail'}],d);}
+function addSiteCouvert(d){mkCard('sitesCouvertsList',[{key:'nom',label:'Établissement',ph:'Nom'},{key:'lieu',label:'Lieu',ph:'Ville'},{key:'heb',label:'Hébergeur',ph:'Hébergeur'},{key:'theme',label:'Thématique',ph:'Thématique'}],d);}
+function addAutreSite(d){mkCard('autresSitesList',[
+  {key:'nom',label:'Établissement',ph:'Nom'},{key:'lieu',label:'Lieu',ph:'Ville'},{key:'heb',label:'Hébergeur',ph:''},
+  {key:'md',label:'Activité MD',type:'select',opts:[{v:'non_communique',l:'Non communiqué'},{v:'oui',l:'OUI'},{v:'non',l:'NON'}]}
+],d);}
+function addMdEmballe(d){mkCard('mdEmballeesList',[{key:'cl',label:'Classe',ph:'3'},{key:'un',label:'N° UN',ph:'1993'},{key:'ge',label:'GE',ph:'II'},{key:'etiq',label:'Étiq.',ph:'3'},{key:'cond',label:'Cond.',ph:'Fûts 20L'},{key:'qte',label:'Qté/an',ph:'142 kg'}],d);}
+function addVisite(d){mkCard('visitesList',[{key:'date',label:'Date',ph:'MM/AAAA',inputmode:'numeric'},{key:'lieu',label:'Lieu',ph:'Lieu'},{key:'themes',label:'Thèmes abordés',ph:'Thèmes...'}],d);}
+function addForm44(d){mkCard('form44List',[{key:'svc',label:'Service',ph:'Service'},{key:'nb',label:'Personnes concernées',ph:'0',inputmode:'numeric'},{key:'nba',label:'Formées dans l\'année',ph:'0',inputmode:'numeric'}],d);}
+function addForm45(d){mkCard('form45List',[{key:'svc',label:'Service',ph:'Service'},{key:'nb',label:'Personnes concernées',ph:'0',inputmode:'numeric'},{key:'nba',label:'Formées dans l\'année',ph:'0',inputmode:'numeric'}],d);}
+
+// ═══════════════════════════════════════════════════
+// COLLECT & RESTORE DATA — format identique à l'outil PC
+// ═══════════════════════════════════════════════════
+function getFormData(){
+  const d={};
+  document.querySelectorAll('[data-f]').forEach(el=>{d[el.dataset.f]=el.type==='checkbox'?el.checked:el.value;});
+  // Synthèse → _synth
+  d._synth={};
+  SS.forEach((_,i)=>{if(synthState[i])d._synth[i]=synthState[i];});
+  // Thèmes → statuts depuis boutons
+  TH.forEach(t=>t.tasks.forEach((_,i)=>{
+    const sel=document.querySelector(`.statut-btn[data-field="${t.id}_s_${i}"][data-selected="1"]`);
+    d[`${t.id}_s_${i}`]=sel?sel.dataset.val:'';
+  }));
+  // Tableaux dynamiques
+  d._services=gDynCards('servicesList',['etab','service','pers']);
+  d._mdEmb=gDynCards('mdEmballeesList',['cl','un','ge','etiq','cond','qte']);
+  d._visites=gDynCards('visitesList',['date','lieu','themes']);
+  d._interlocuteurs=gDynCards('interlocList',['nom','fn','contact']);
+  d._sitesCouv=gDynCards('sitesCouvertsList',['nom','lieu','heb','theme']);
+  d._autresSites=gDynCards('autresSitesList',['nom','lieu','heb','md']);
+  d._form44=gDynCards('form44List',['svc','nb','nba']);
+  d._form45=gDynCards('form45List',['svc','nb','nba']);
+  return d;
+}
+function gDynCards(containerId,keys){
+  const r=[];
+  document.querySelectorAll(`#${containerId} .dyn-card`).forEach(card=>{
+    const row=keys.map(k=>{const el=card.querySelector(`[data-dynf="${k}"]`);return el?el.value:'';});
+    if(row.some(v=>v.trim()))r.push(row);
+  });
+  return r;
+}
+
+function setFormData(d){
+  document.querySelectorAll('[data-f]').forEach(el=>{
+    const k=el.dataset.f;if(d[k]===undefined)return;
+    if(el.type==='checkbox'){el.checked=!!d[k];el.closest('.check-item')&&el.closest('.check-item').classList.toggle('checked',!!d[k]);}
+    else el.value=d[k];
+  });
+  // Synthèse
+  synthState={};
+  if(d._synth)SS.forEach((_,i)=>{
+    if(d._synth[i]){
+      synthState[i]=d._synth[i];
+      const btn=document.querySelector(`.synth-radio-btn[data-idx="${i}"][data-val="${d._synth[i]}"]`);
+      if(btn)btn.classList.add('sel');
+    }
+  });
+  // Thèmes — nettoyer d'abord les sélections existantes
+  document.querySelectorAll('.statut-btn').forEach(b=>{b.className='statut-btn';b.dataset.selected='';});
+  TH.forEach(t=>t.tasks.forEach((_,i)=>{
+    const val=d[`${t.id}_s_${i}`];
+    if(val){
+      const btn=document.querySelector(`.statut-btn[data-field="${t.id}_s_${i}"][data-val="${val}"]`);
+      if(btn){btn.classList.add(`sel-${val.toLowerCase().replace('/','')}`);btn.dataset.selected='1';}
+    }
+  }));
+  // Tableaux dynamiques
+  if(d._services?.length){document.getElementById('servicesList').innerHTML='';d._services.forEach(r=>addService(r));}
+  if(d._mdEmb?.length){document.getElementById('mdEmballeesList').innerHTML='';d._mdEmb.forEach(r=>addMdEmballe(r));}
+  if(d._visites?.length){document.getElementById('visitesList').innerHTML='';d._visites.forEach(r=>addVisite(r));}
+  if(d._interlocuteurs?.length){document.getElementById('interlocList').innerHTML='';d._interlocuteurs.forEach(r=>addInterloc(r));}
+  if(d._sitesCouv?.length){document.getElementById('sitesCouvertsList').innerHTML='';d._sitesCouv.forEach(r=>addSiteCouvert(r));}
+  if(d._autresSites?.length){document.getElementById('autresSitesList').innerHTML='';d._autresSites.forEach(r=>addAutreSite(r));}
+  if(d._form44?.length){document.getElementById('form44List').innerHTML='';d._form44.forEach(r=>addForm44(r));}
+  if(d._form45?.length){document.getElementById('form45List').innerHTML='';d._form45.forEach(r=>addForm45(r));}
+  updateValidite();
+  updateAllPct();
+}
+
+// ═══════════════════════════════════════════════════
+// DATE VALIDITÉ
+// ═══════════════════════════════════════════════════
+function updateValidite(){
+  const src=document.querySelector('[data-f="date_transmission"]');
+  const disp=document.getElementById('m_date_valid');
+  if(!src||!disp)return;
+  const p=src.value.trim().split('/');
+  if(p.length!==3||isNaN(+p[0])||isNaN(+p[1])||isNaN(+p[2]))return;
+  const d=new Date(+p[2]+5,+p[1]-1,+p[0]);
+  disp.value=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+// ═══════════════════════════════════════════════════
+// COMPLÉTION
+// ═══════════════════════════════════════════════════
+const PCT_CFG={
+  garde:{fields:['annee','nom_etab','code_umr','adresse_etab','resp_legal','directeur','siren','siret','nom_redacteur','cert_redacteur','date_valid_red','nom_visiteur','cert_visiteur','date_valid_vis','nb_visites','date_transmission','destinataire','tel_conseiller','mode_transport','classes_md']},
+  synthese:{synthRows:16,fields:['resume_synthese','recommandation']},
+  org:{fields:['activite_detail','gestion_admin','gestion_ope'],checkboxGroup:true,dynTables:['servicesList','interlocList']},
+  activites:{fields:['md_chargees_comm','md_decharg_comm','md_exped_comm'],dynTables:['mdEmballeesList']},
+  evenements:{fields:['nb_evenements','nb_accidents','evt_signif_cl7','evt_eit_cl7']},
+  interventions:{fields:['audits_internes','audits_externes','inspections'],dynTables:['visitesList']},
+  actions:{themeStatuts:true},
+  formation:{fields:['base_4_2','c_4_2','cl1_4_2','cl7_4_2','petrole_4_2','gpl_4_2','base_4_3','mseche_4_3','bateau_citerne_4_3','combine_4_3','gaz_4_3','chimie_4_3'],dynTables:['form44List','form45List']},
+  propositions:{fields:['propositions']}
+};
+function computePct(secId){
+  const cfg=PCT_CFG[secId];if(!cfg)return 0;
+  let tot=0,filled=0;
+  if(cfg.fields)cfg.fields.forEach(f=>{tot++;const el=document.querySelector(`[data-f="${f}"]`);if(el&&el.value&&el.value.trim())filled++;});
+  if(cfg.synthRows){for(let i=0;i<cfg.synthRows;i++){tot++;if(synthState[i])filled++;}}
+  if(cfg.checkboxGroup){tot++;if(ROLES.some(r=>{const el=document.querySelector(`[data-f="${r.f}"]`);return el&&el.checked;}))filled++;}
+  if(cfg.dynTables)cfg.dynTables.forEach(id=>{tot++;let has=false;document.querySelectorAll(`#${id} .dyn-card`).forEach(card=>{if(!has)card.querySelectorAll('input,textarea,select').forEach(el=>{if(el.value&&el.value.trim())has=true;});});if(has)filled++;});
+  if(cfg.themeStatuts)TH.forEach(t=>t.tasks.forEach((_,i)=>{tot++;if(document.querySelector(`.statut-btn[data-field="${t.id}_s_${i}"][data-selected="1"]`))filled++;}));
+  return tot===0?0:Math.round((filled/tot)*100);
+}
+function updateAllPct(){
+  Object.keys(PCT_CFG).forEach(sec=>{
+    const badge=document.getElementById(`pct-${sec}`);if(!badge)return;
+    const pct=computePct(sec);
+    badge.textContent=pct+'%';
+    badge.className='sec-pct '+(pct>=80?'pct-green':pct>=35?'pct-orange':'pct-red');
+  });
+  // per-theme badges
+  TH.forEach(t=>{
+    const badge=document.getElementById(`thpct-${t.id}`);if(!badge)return;
+    let tot=0,filled=0;
+    t.tasks.forEach((_,i)=>{tot++;if(document.querySelector(`.statut-btn[data-field="${t.id}_s_${i}"][data-selected="1"]`))filled++;});
+    const pct=tot===0?0:Math.round((filled/tot)*100);
+    badge.textContent=pct+'%';
+    badge.className='theme-pct '+(pct>=80?'pct-green':pct>=35?'pct-orange':'pct-red');
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// PERSISTANCE
+// ═══════════════════════════════════════════════════
+function getSaved(){try{return JSON.parse(localStorage.getItem('tmd_mobile')||'[]');}catch(e){return[];}}
+function updateSavedBadge(){const n=getSaved().length;const b=document.getElementById('savedCount');if(!b)return;b.textContent=n;b.style.display=n?'inline':'none';}
+function saveAudit(){
+  const d=getFormData();
+  const a=getSaved();
+  a.unshift({id:Date.now(),title:(d.nom_etab||'Audit')+' — '+(d.annee||''),date:new Date().toLocaleString('fr-FR'),data:d});
+  if(a.length>30)a.length=30;
+  localStorage.setItem('tmd_mobile',JSON.stringify(a));
+  showToast('Sauvegardé ✓','success');
+  renderSaved();
+  updateSavedBadge();
+}
+function loadAudit(id){
+  const a=getSaved().find(x=>x.id===id);
+  if(a){setFormData(a.data);showToast('Chargé ✓','success');document.getElementById('savedList').classList.remove('visible');}
+}
+function deleteAudit(id){
+  localStorage.setItem('tmd_mobile',JSON.stringify(getSaved().filter(x=>x.id!==id)));
+  renderSaved();updateSavedBadge();showToast('Supprimé','error');
+}
+function updateSavedCount(){
+  const a=getSaved();const b=document.getElementById('savedCount');
+  if(!b)return;if(a.length>0){b.textContent=a.length;b.style.display='inline';}else b.style.display='none';
+}
+function renderSaved(){
+  const el=document.getElementById('savedList');
+  const a=getSaved();updateSavedCount();
+  if(!a.length){el.innerHTML='<p style="font-size:.84em;color:var(--g400);padding:8px 0">Aucun audit sauvegardé.</p>';return;}
+  let h='<p style="font-weight:700;font-size:.85em;color:var(--bleu);margin-bottom:10px">📂 Mes audits</p>';
+  a.forEach(x=>{
+    h+=`<div class="saved-item" onclick="loadAudit(${x.id})">
+      <div><div style="font-weight:600;font-size:.88em">${esc(x.title)}</div><div style="font-size:.74em;color:var(--g400)">${x.date}</div></div>
+      <button class="saved-item-del" onclick="event.stopPropagation();deleteAudit(${x.id})">✕</button>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+function openSavedSheet(){
+  renderSavedSheet();
+  document.getElementById('savedSheet').classList.add('visible');
+}
+function closeSavedSheet(){document.getElementById('savedSheet').classList.remove('visible');}
+function toggleSaved(){openSavedSheet();}
+function renderSavedSheet(){
+  const el=document.getElementById('savedSheetList');
+  const a=getSaved();updateSavedCount();
+  if(!a.length){el.innerHTML='<p style="padding:16px 20px;font-size:.84em;color:var(--g400)">Aucun audit sauvegardé.</p>';return;}
+  let h='';
+  a.forEach(x=>{
+    h+=`<div style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid var(--g100);gap:8px">
+      <div style="flex:1;cursor:pointer" onclick="loadAuditSheet(${x.id})">
+        <div style="font-weight:600;font-size:.88em">${esc(x.title)}</div>
+        <div style="font-size:.74em;color:var(--g400)">${x.date}</div>
+      </div>
+      <button style="background:none;border:1px solid var(--rouge);color:var(--rouge);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.75em;min-height:36px;font-family:inherit" onclick="event.stopPropagation();deleteAuditSheet(${x.id})">✕</button>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+function loadAuditSheet(id){
+  const a=getSaved().find(x=>x.id===id);
+  if(a){setFormData(a.data);closeSavedSheet();showToast('Chargé ✓','success');}
+}
+function deleteAuditSheet(id){
+  localStorage.setItem('tmd_mobile',JSON.stringify(getSaved().filter(x=>x.id!==id)));
+  renderSavedSheet();updateSavedCount();showToast('Supprimé','error');
+}
+function clearForm(){
+  showConfirm(
+    'Effacer tout le formulaire ?',
+    'Toutes les données saisies seront perdues. Les audits sauvegardés ne sont pas affectés.',
+    _doFullClear
+  );
+}
+function _doFullClear(){
+  document.querySelectorAll('[data-f]').forEach(el=>{
+    if(el.type==='checkbox'){el.checked=false;el.closest('.check-item')?.classList.remove('checked');}
+    else if(el.tagName==='SELECT')el.selectedIndex=0;
+    else el.value='';
+  });
+  synthState={};
+  document.querySelectorAll('.synth-radio-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.statut-btn').forEach(b=>{b.className='statut-btn';b.dataset.selected='';});
+  ['servicesList','mdEmballeesList','visitesList','interlocList','sitesCouvertsList','autresSitesList','form44List','form45List']
+    .forEach(id=>document.getElementById(id).innerHTML='');
+  addService();addMdEmballe();addVisite();addInterloc();addSiteCouvert();addAutreSite();addForm44();addForm45();
+  document.getElementById('m_date_valid').value='';
+  updateAllPct();
+  showToast('Effacé');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{setFormData(JSON.parse(ev.target.result));showToast('Importé ✓','success');}catch(err){showToast('JSON invalide','error');}};
+  r.readAsText(f);e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════
+// SEND — 3 canaux
+// ═══════════════════════════════════════════════════
+function openSendSheet(){document.getElementById('sendSheet').classList.add('visible');}
+function closeSendSheet(){document.getElementById('sendSheet').classList.remove('visible');}
+
+function getFileName(){
+  const d=getFormData();
+  const _t=new Date();const _ds=_t.getFullYear()+String(_t.getMonth()+1).padStart(2,'0')+String(_t.getDate()).padStart(2,'0');
+  return 'audit_TMD_'+(d.nom_etab||'export').replace(/\s+/g,'_')+'_'+(d.annee||_t.getFullYear())+'_'+_ds+'.json';
+}
+
+async function sendViaShare(){
+  closeSendSheet();
+  const d=getFormData();
+  const jsonStr=JSON.stringify(d,null,2);
+  const file=new File([jsonStr],getFileName(),{type:'application/json'});
+  try{
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Audit TMD — '+(d.nom_etab||'')+' '+(d.annee||''),text:'Importer sur PC via ⬆ JSON'});
+      showToast('Partagé ✓','success');return;
+    }
+    // Fallback : téléchargement + share texte
+    const blobA=new Blob([jsonStr],{type:'application/json'});
+    const urlA=URL.createObjectURL(blobA);
+    const a=document.createElement('a');a.href=urlA;a.download=getFileName();a.click();
+    setTimeout(()=>URL.revokeObjectURL(urlA),5000);
+    if(navigator.share)await navigator.share({title:'Audit TMD',text:'Fichier '+getFileName()+' téléchargé.'});
+    showToast('Fichier téléchargé ✓','success');
+  }catch(e){
+    if(e.name==='AbortError')return;
+    const blobB=new Blob([jsonStr],{type:'application/json'});
+    const urlB=URL.createObjectURL(blobB);
+    const a=document.createElement('a');a.href=urlB;a.download=getFileName();a.click();
+    setTimeout(()=>URL.revokeObjectURL(urlB),5000);
+    showToast('Fichier téléchargé','success');
+  }
+}
+
+function sendViaMail(){
+  closeSendSheet();
+  const d=getFormData();
+  const jsonStr=JSON.stringify(d,null,2);
+  // Télécharger
+  const blobM=new Blob([jsonStr],{type:'application/json'});
+  const urlM=URL.createObjectURL(blobM);
+  const a=document.createElement('a');a.href=urlM;a.download=getFileName();a.click();
+  setTimeout(()=>URL.revokeObjectURL(urlM),5000);
+  // Ouvrir mail
+  const sujet=encodeURIComponent('Audit TMD — '+(d.nom_etab||'')+' '+(d.annee||''));
+  const corps=encodeURIComponent('Bonjour,\n\nVeuillez trouver ci-joint le fichier de saisie audit TMD.\nFichier : '+getFileName()+'\n\nPour importer sur PC : ouvrir l\'outil PC → bouton ⬆ JSON → sélectionner le fichier.\n\nÉtablissement : '+(d.nom_etab||'—')+'\nAnnée : '+(d.annee||'—'));
+  setTimeout(()=>{window.location.href='mailto:?subject='+sujet+'&body='+corps;},500);
+  showToast('Fichier téléchargé — app mail ouverte','success');
+}
+
+async function sendViaCopy(){
+  closeSendSheet();
+  const jsonStr=JSON.stringify(getFormData(),null,2);
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(jsonStr);
+      showToast('JSON copié dans le presse-papier ✓','success');return;
+    }
+  }catch(e){}
+  // Fallback : textarea sélectionnable
+  const ta=document.createElement('textarea');
+  ta.value=jsonStr;ta.style.cssText='position:fixed;top:50%;left:0;width:100%;opacity:.01';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  document.execCommand('copy');document.body.removeChild(ta);
+  showToast('JSON copié ✓','success');
+}
+
+// ═══════════════════════════════════════════════════
+// BIBLIOTHÈQUE — Picker bottom sheet
+// ═══════════════════════════════════════════════════
+function openLibPicker(targetField){
+  libPickerTarget=targetField;
+  libCatFilter='all';
+  renderLibCatPills();
+  renderLibList();
+  document.getElementById('libSheet').classList.add('visible');
+}
+function closeLibSheet(){document.getElementById('libSheet').classList.remove('visible');libPickerTarget=null;}
+function renderLibCatPills(){
+  const ct=document.getElementById('libCatPills');
+  const cats=['all',...lib.categories];
+  ct.innerHTML=cats.map(c=>`<button class="lib-cat-pill${libCatFilter===c?' active':''}" onclick="setLibCat('${c.replace(/'/g,"\\'")}' )">${c==='all'?'Tous':esc(c)}</button>`).join('');
+}
+function setLibCat(cat){libCatFilter=cat;renderLibCatPills();renderLibList();}
+function renderLibList(){
+  const ct=document.getElementById('libSheetList');
+  const items=lib.comments.filter(c=>libCatFilter==='all'||c.category===libCatFilter);
+  if(!items.length){ct.innerHTML='<p style="padding:16px 20px;font-size:.82em;color:var(--g400)">Aucun commentaire.</p>';return;}
+  ct.innerHTML=items.map(c=>`
+    <div class="lib-item" onclick="insertLibComment(${c.id})">
+      <span class="lib-item-cat">${esc(c.category)}</span>
+      <div class="lib-item-label">${esc(c.label)}</div>
+      <div class="lib-item-preview">${esc(c.text.length>100?c.text.substring(0,100)+'…':c.text)}</div>
+    </div>`).join('');
+}
+function insertLibComment(libId){
+  if(!libPickerTarget)return;
+  const c=lib.comments.find(x=>x.id===libId);if(!c)return;
+  const el=document.querySelector(`[data-f="${libPickerTarget}"]`);
+  if(!el)return;
+  const sep=el.value.length>0&&el.value[el.value.length-1]!=='\n'?'\n':'';
+  el.value+=sep+c.text;
+  closeLibSheet();
+  el.focus();
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  showToast('Commentaire inséré ✓','success');
+  updateAllPct();
+}
+
+// ═══════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════
+function toggleSec(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open');}
+function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML;}
+function showToast(m,ty){
+  const t=document.getElementById('toast');t.textContent=m;
+  t.className='toast visible'+(ty?' '+ty:'');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.className='toast',2600);
+}
+// ═══════════════════════════════════════════════════
+// BIBLIOTHÈQUE — Gestion mobile (ajout/suppression/export/import)
+// ═══════════════════════════════════════════════════
+function openLibManage(){
+  renderLibManageList();
+  // Peupler select catégories
+  const sel=document.getElementById('lmCat');
+  sel.innerHTML=lib.categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  document.getElementById('lmLabel').value='';
+  document.getElementById('lmText').value='';
+  document.getElementById('libManageSheet').classList.add('visible');
+}
+function closeLibManage(){document.getElementById('libManageSheet').classList.remove('visible');}
+function renderLibManageList(){
+  const ct=document.getElementById('libManageList');
+  if(!lib.comments.length){ct.innerHTML='<p style="padding:12px 20px;font-size:.82em;color:var(--g400)">Aucun commentaire.</p>';return;}
+  ct.innerHTML=lib.comments.map(c=>`
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 20px;border-bottom:1px solid var(--g100)">
+      <div style="flex:1;min-width:0">
+        <span style="font-size:.68em;font-weight:700;color:var(--bleu);background:var(--bleu-p);padding:2px 6px;border-radius:10px">${esc(c.category)}</span>
+        <div style="font-weight:600;font-size:.82em;margin-top:3px">${esc(c.label)}</div>
+        <div style="font-size:.74em;color:var(--g400);margin-top:2px;line-height:1.3">${esc(c.text.length>80?c.text.substring(0,80)+'…':c.text)}</div>
+      </div>
+      <button onclick="deleteLibMobile(${c.id})" style="background:none;border:1px solid var(--rouge);color:var(--rouge);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.75em;flex-shrink:0;min-height:34px;font-family:inherit">✕</button>
+    </div>`).join('');
+}
+function saveLibMobile(){
+  const cat=document.getElementById('lmCat').value;
+  const label=document.getElementById('lmLabel').value.trim();
+  const text=document.getElementById('lmText').value.trim();
+  if(!label||!text){showToast('Remplissez le titre et le texte','error');return;}
+  lib.comments.push({id:Date.now(),category:cat,label,text});
+  localStorage.setItem('tmd_library',JSON.stringify(lib));
+  document.getElementById('lmLabel').value='';
+  document.getElementById('lmText').value='';
+  renderLibManageList();
+  showToast('Commentaire ajouté ✓','success');
+}
+function deleteLibMobile(id){
+  lib.comments=lib.comments.filter(x=>x.id!==id);
+  localStorage.setItem('tmd_library',JSON.stringify(lib));
+  renderLibManageList();
+  showToast('Supprimé','error');
+}
+function exportLibMobile(){
+  const jsonStr=JSON.stringify(lib,null,2);
+  const blob=new Blob([jsonStr],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='bibliotheque_tmd.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  // Partage natif si disponible
+  const file=new File([jsonStr],'bibliotheque_tmd.json',{type:'application/json'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'Bibliothèque TMD'}).catch(()=>{});
+  }
+  showToast('Bibliothèque exportée ✓','success');
+}
+function importLibMobile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const p=JSON.parse(ev.target.result);
+      if(p&&p.comments&&Array.isArray(p.comments)){
+        lib=p;
+        localStorage.setItem('tmd_library',JSON.stringify(lib));
+        renderLibManageList();
+        showToast('Bibliothèque importée — '+lib.comments.length+' commentaires','success');
+      }else showToast('Format invalide','error');
+    }catch(err){showToast('JSON invalide','error');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════
+// VIDER UNE SECTION
+// ═══════════════════════════════════════════════════
+const SEC_FIELDS_MOB = {
+  garde:   ['annee','nom_etab','code_umr','adresse_etab','resp_legal','directeur','siren','siret',
+             'nom_redacteur','cert_redacteur','date_valid_red','nom_visiteur','cert_visiteur','date_valid_vis',
+             'nb_visites','date_transmission','destinataire','tel_conseiller','mode_transport','classes_md'],
+  synthese:['resume_synthese','recommandation','remerciements'],
+  org:     ['activite_detail','gestion_admin','precisions_contrat','gestion_ope','rubriques_icpe','role_autres','politique_tmd'],
+  activites:['md_chargees_comm','md_decharg_comm','md_exped_comm','haut_risque_comm','nbre_parcs'],
+  evenements:['nb_evenements','detail_evenements','nb_accidents','detail_accidents','evt_signif_cl7','evt_eit_cl7'],
+  interventions:['audits_internes','audits_externes','inspections'],
+  formation:['base_4_2','c_4_2','cl1_4_2','cl7_4_2','petrole_4_2','gpl_4_2','base_4_3','mseche_4_3','bateau_citerne_4_3','combine_4_3','gaz_4_3','chimie_4_3','theme4_4_gen','theme4_5_gen','theme4_6_service','nbre_4_6'],
+  propositions:['propositions']
+};
+const SEC_LISTS_MOB = {
+  org:['servicesList','interlocList','sitesCouvertsList','autresSitesList'],
+  activites:['mdEmballeesList'],
+  interventions:['visitesList'],
+  formation:['form44List','form45List']
+};
+const SEC_LIST_ADD_MOB = {
+  servicesList:()=>addService(), interlocList:()=>addInterloc(),
+  sitesCouvertsList:()=>addSiteCouvert(), autresSitesList:()=>addAutreSite(),
+  mdEmballeesList:()=>addMdEmballe(), visitesList:()=>addVisite(),
+  form44List:()=>addForm44(), form45List:()=>addForm45()
+};
+// ═══════════════════════════════════════════════════
+// VIDER UNE SECTION
+// ═══════════════════════════════════════════════════
+function clearSec(secId, e){
+  if(e) e.stopPropagation();
+  const SEC_LABELS={garde:'Page de garde',synthese:'Synthèse',org:'Organisation',activites:'Activités',evenements:'Événements',interventions:'Interventions',actions:'Thèmes & Vérifications',formation:'Formation',propositions:'Propositions'};
+  showConfirm(
+    'Vider la section ?',
+    'La section "'+( SEC_LABELS[secId]||secId)+'" sera réinitialisée. Cette action est irréversible.',
+    ()=>_doCleanSec(secId)
+  );
+}
+function _doCleanSec(secId){
+  (SEC_FIELDS_MOB[secId]||[]).forEach(f=>{
+    const el=document.querySelector('[data-f="'+f+'"]');if(!el)return;
+    if(el.type==='checkbox'){el.checked=false;el.closest('.check-item')?.classList.remove('checked');}
+    else if(el.tagName==='SELECT')el.selectedIndex=0;
+    else el.value='';
+  });
+  (SEC_LISTS_MOB[secId]||[]).forEach(id=>{
+    const ct=document.getElementById(id);if(!ct)return;
+    ct.innerHTML='';if(SEC_LIST_ADD_MOB[id])SEC_LIST_ADD_MOB[id]();
+  });
+  if(secId==='synthese'){
+    synthState={};
+    document.querySelectorAll('.synth-radio-btn').forEach(b=>b.classList.remove('sel'));
+  }
+  if(secId==='org'){
+    ROLES.forEach(r=>{
+      const el=document.querySelector('[data-f="'+r.f+'"]');
+      if(el){el.checked=false;el.closest('.check-item')?.classList.remove('checked');}
+    });
+  }
+  if(secId==='actions'){
+    document.querySelectorAll('.statut-btn').forEach(b=>{b.className='statut-btn';b.dataset.selected='';});
+    document.querySelectorAll('[data-f]').forEach(el=>{
+      if(el.dataset.f.match(/^t\d+_(c|gen)_?\d*/))el.value='';
+    });
+    document.querySelectorAll('.task-comment').forEach(t=>t.value='');
+  }
+  if(secId==='garde')document.getElementById('m_date_valid').value='';
+  updateAllPct();
+  showToast('Section vidée');
+}
+
+// ═══════════════════════════════════════════════════
+// CONFIRM MODAL
+// ═══════════════════════════════════════════════════
+let _confirmCallback=null;
+function showConfirm(title,msg,onOk){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  _confirmCallback=onOk;
+  document.getElementById('confirmOverlay').classList.add('visible');
+}
+function closeConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('visible');
+  _confirmCallback=null;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('confirmOkBtn').addEventListener('click',()=>{
+    closeConfirm();
+    if(_confirmCallback)_confirmCallback();
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// AUTO-MASQUE DATES — JJ/MM/AAAA
+// ═══════════════════════════════════════════════════
+function applyDateMask(el){
+  el.addEventListener('input',function(e){
+    let v=this.value.replace(/\D/g,'');
+    if(v.length>8)v=v.slice(0,8);
+    let out='';
+    if(v.length>4)out=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+    else if(v.length>2)out=v.slice(0,2)+'/'+v.slice(2);
+    else out=v;
+    // preserve cursor if user is deleting
+    const sel=this.selectionStart;
+    const prev=this.value;
+    this.value=out;
+    // reposition cursor after slash insertion
+    if(out.length>prev.length&&(out.length===3||out.length===6)){
+      this.setSelectionRange(out.length,out.length);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// RECONNAISSANCE VOCALE
+// ═══════════════════════════════════════════════════
+const SPEECH_SUPPORTED=('SpeechRecognition' in window)||('webkitSpeechRecognition' in window);
+let _activeRec=null;
+let _activeBtn=null;
+
+function injectVoiceButtons(){
+  if(!SPEECH_SUPPORTED)return;
+  document.querySelectorAll('textarea[data-f]').forEach(ta=>{
+    if(ta.parentElement.querySelector('.voice-btn'))return; // évite double-injection
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='voice-btn';
+    btn.innerHTML='🎤 Dicter';
+    btn.addEventListener('click',()=>toggleVoice(ta,btn));
+    ta.parentElement.insertBefore(btn,ta.nextSibling);
+  });
+}
+
+function toggleVoice(textarea,btn){
+  // Si une écoute est en cours sur ce bouton → stop
+  if(_activeBtn===btn&&_activeRec){
+    _activeRec.stop();
+    return;
+  }
+  // Si une autre écoute est en cours → couper d'abord
+  if(_activeRec){
+    _activeRec.stop();
+    if(_activeBtn){_activeBtn.textContent='🎤 Dicter';_activeBtn.classList.remove('voice-active');}
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR();
+  r.lang='fr-FR';
+  r.continuous=false;
+  r.interimResults=false;
+
+  r.onstart=()=>{
+    _activeRec=r;
+    _activeBtn=btn;
+    btn.innerHTML='⏹ Stop';
+    btn.classList.add('voice-active');
+    showToast('Écoute en cours…');
+  };
+
+  r.onresult=e=>{
+    const text=e.results[0][0].transcript;
+    const sep=(textarea.value.length>0&&textarea.value[textarea.value.length-1]!=='\n')?'\n':'';
+    textarea.value+=sep+text;
+    textarea.dispatchEvent(new Event('input',{bubbles:true}));
+    showToast('Transcription insérée ✓','success');
+  };
+
+  r.onerror=e=>{
+    const msgs={
+      'not-allowed':'Accès micro refusé — Réglages › Safari › Micro',
+      'network':'Connexion requise pour la dictée',
+      'no-speech':'Aucune parole détectée',
+      'aborted':null
+    };
+    const msg=msgs[e.error]||('Erreur micro : '+e.error);
+    if(msg)showToast(msg,'error');
+  };
+
+  r.onend=()=>{
+    _activeRec=null;
+    _activeBtn=null;
+    btn.innerHTML='🎤 Dicter';
+    btn.classList.remove('voice-active');
+  };
+
+  try{r.start();}
+  catch(err){showToast('Impossible de démarrer le micro','error');}
+}
+
+init();
+</script>
+</body>
+</html>
